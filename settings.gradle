@@ -1,0 +1,2 @@
+include ':app', ':spotify-web-api-android'
+project(':spotify-web-api-android').projectDir = new File('app/libs/spotify-web-api-android')
