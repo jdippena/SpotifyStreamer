@@ -38,11 +38,7 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
     private ArtistViewAdapter mArtistAdapter;
     private String mPaletteIntentLabel;
     private String mPaletteIntentLabelBar;
-
-    //TODO: hide keyboard after search
-    //TODO: save state on rotation
-    //TODO: change status bar color
-    //TODO: make text look nicer
+    private String mArtistNameIntentLabel;
 
     public MainFragment() {}
 
@@ -51,6 +47,7 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
         setHasOptionsMenu(true);
         mPaletteIntentLabel = getString(R.string.palette_intent_label);
         mPaletteIntentLabelBar  = getString(R.string.palette_intent_label_status_bar);
+        mArtistNameIntentLabel = getString(R.string.artist_name_intent_label);
 
         super.onCreate(savedInstanceState);
     }
@@ -80,11 +77,12 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
                     ImageView imageView = (ImageView) view.findViewById(R.id.list_item_artist_image);
                     Bitmap b = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
                     paletteColorMain = Palette.from(b).generate().getMutedColor(Color.GRAY);
-                    paletteColorBar = Palette.from(b).generate().getDarkMutedColor(Color.DKGRAY);
+                    paletteColorBar = (paletteColorMain & 0xfefefefe) >> 1;
                 }
 
                 Intent detailIntent = new Intent(mContext, ArtistDetailActivity.class)
                         .putExtra(Intent.EXTRA_TEXT, mArtistAdapter.getItem(position).id)
+                        .putExtra(mArtistNameIntentLabel, mArtistAdapter.getItem(position).name)
                         .putExtra(mPaletteIntentLabel, paletteColorMain)
                         .putExtra(mPaletteIntentLabelBar, paletteColorBar);
                 startActivity(detailIntent);
@@ -166,8 +164,6 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
             ((TextView) convertView.findViewById(R.id.list_item_artist_text)).setText(a.name);
 
             ImageView imageView = (ImageView) convertView.findViewById(R.id.list_item_artist_image);
-            imageView.setImageBitmap(null); //don't know why this works
-
             if (a.images.size() > 0) {
                 Picasso.with(mContext)
                         .load(getArtistImageURL(a)).placeholder(R.drawable.default_person)

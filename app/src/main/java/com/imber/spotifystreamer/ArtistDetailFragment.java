@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -58,10 +59,14 @@ public class ArtistDetailFragment extends Fragment {
                 parent.getWindow().setStatusBarColor(intent.getIntExtra(paletteIntentLabelBar, Color.DKGRAY));
             }
             if (parent.getSupportActionBar() != null) {
-                parent.getSupportActionBar()
-                        .setBackgroundDrawable(new ColorDrawable(intent
-                                .getIntExtra(paletteIntentLabel, Color.GRAY)));
+                ActionBar bar = parent.getSupportActionBar();
+                bar.setBackgroundDrawable(new ColorDrawable(
+                        intent.getIntExtra(paletteIntentLabel, Color.GRAY)
+                ));
+                String artistName = intent.getStringExtra(getString(R.string.artist_name_intent_label));
+                bar.setSubtitle(artistName);
             }
+
 
             //get artist id from intent
             String artistId = intent.getStringExtra(Intent.EXTRA_TEXT);
@@ -123,7 +128,6 @@ public class ArtistDetailFragment extends Fragment {
 
         @Override
         protected void onPostExecute(ArrayList<Track> result) {
-            //TODO: what if result is null?
             if (result != null) {
                 mTrackAdapter.addAll(result);
             }
@@ -141,8 +145,8 @@ public class ArtistDetailFragment extends Fragment {
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_detail, null);
             }
-            String textDisplay = track.name + "\n" + track.album.name;
-            ((TextView) convertView.findViewById(R.id.list_item_detail_text)).setText(textDisplay);
+            ((TextView) convertView.findViewById(R.id.list_item_detail_track)).setText(track.name);
+            ((TextView) convertView.findViewById(R.id.list_item_detail_album)).setText(track.album.name);
 
             ImageView imageView = (ImageView) convertView.findViewById(R.id.list_item_detail_image);
 

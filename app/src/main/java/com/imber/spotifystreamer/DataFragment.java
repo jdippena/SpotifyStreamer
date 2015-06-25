@@ -17,6 +17,10 @@ public class DataFragment extends Fragment{
         setRetainInstance(true);
     }
 
+    public void setDataList(ArrayList<Data> dataList) {
+        this.dataList = dataList;
+    }
+
     public ArrayList<Data> getDataList() {
         return dataList;
     }
@@ -25,14 +29,20 @@ public class DataFragment extends Fragment{
         this.dataList.add(data);
     }
 
+    public void clear() {
+        dataList = new ArrayList<>();
+    }
+
     // wrapper for data
-    class Data {
+    static class Data {
         Bitmap bitmap;
         String text;
+        String id;
 
-        Data(Bitmap bitmap, String text) {
+        Data(Bitmap bitmap, String text, String id) {
             this.bitmap = bitmap;
             this.text = text;
+            this.id = id;
         }
     }
 }

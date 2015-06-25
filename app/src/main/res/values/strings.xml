@@ -12,14 +12,10 @@
     <!--Strings for passing intent to ArtistDetailActivity-->
     <string name="palette_intent_label" translatable="false">palette_int</string>
     <string name="palette_intent_label_status_bar" translatable="false">palette_int_status_bar</string>
+    <string name="artist_name_intent_label" translatable="false">artist_name</string>
 
     <string name="pref_country_code_title">Country Code</string>
     <string name="pref_country_code_key" translatable="false">countryCode</string>
     <string name="pref_country_code_default" translatable="false">US</string>
-    <string name="title_activity_main2">Main2Activity</string>
-    <string name="hello_world">Hello world!</string>
-
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
