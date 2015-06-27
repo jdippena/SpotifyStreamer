@@ -15,21 +15,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.squareup.picasso.Picasso;
+import com.imber.spotifystreamer.adapters.ArtistViewAdapter;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
-import kaaes.spotify.webapi.android.models.Image;
 import retrofit.RetrofitError;
 
 public class MainFragment extends Fragment implements MainActivity.Callback{
@@ -38,7 +34,6 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
     private ArtistViewAdapter mArtistAdapter;
     private String mPaletteIntentLabel;
     private String mPaletteIntentLabelBar;
-    private String mArtistNameIntentLabel;
 
     public MainFragment() {}
 
@@ -47,7 +42,6 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
         setHasOptionsMenu(true);
         mPaletteIntentLabel = getString(R.string.palette_intent_label);
         mPaletteIntentLabelBar  = getString(R.string.palette_intent_label_status_bar);
-        mArtistNameIntentLabel = getString(R.string.artist_name_intent_label);
 
         super.onCreate(savedInstanceState);
     }
@@ -69,20 +63,15 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 int paletteColorMain;
                 int paletteColorBar;
-                //get palette colors
-                if (((ArtistViewAdapter) parent.getAdapter()).defaultPictureArray[position]) {
-                    paletteColorMain = Color.GRAY;
-                    paletteColorBar = Color.DKGRAY;
-                } else {
-                    ImageView imageView = (ImageView) view.findViewById(R.id.list_item_artist_image);
-                    Bitmap b = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-                    paletteColorMain = Palette.from(b).generate().getMutedColor(Color.GRAY);
-                    paletteColorBar = (paletteColorMain & 0xfefefefe) >> 1;
-                }
+                // get palette colors from thumbnails to color the action and status bar
+                ImageView imageView = (ImageView) view.findViewById(R.id.list_item_artist_image);
+                Bitmap b = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+                paletteColorMain = Palette.from(b).generate().getMutedColor(Color.GRAY);
+                // make paletteColorBar darker than paletteColorMain
+                paletteColorBar = (paletteColorMain & 0xfefefefe) >> 1;
 
                 Intent detailIntent = new Intent(mContext, ArtistDetailActivity.class)
                         .putExtra(Intent.EXTRA_TEXT, mArtistAdapter.getItem(position).id)
-                        .putExtra(mArtistNameIntentLabel, mArtistAdapter.getItem(position).name)
                         .putExtra(mPaletteIntentLabel, paletteColorMain)
                         .putExtra(mPaletteIntentLabelBar, paletteColorBar);
                 startActivity(detailIntent);
@@ -138,55 +127,6 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
                 mArtistAdapter.clear();
                 mArtistAdapter.addAll(result);
             }
-        }
-    }
-
-    class ArtistViewAdapter extends ArrayAdapter<Artist> {
-        boolean[] defaultPictureArray;
-
-        ArtistViewAdapter(Context context, int listItemLayoutId, ArrayList<Artist> artists) {
-            super(context, listItemLayoutId, artists);
-        }
-
-        @Override
-        public void notifyDataSetChanged() {
-            defaultPictureArray = new boolean[getCount()];
-            super.notifyDataSetChanged();
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            Artist a = getItem(position);
-            if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_artist, null);
-            }
-
-            ((TextView) convertView.findViewById(R.id.list_item_artist_text)).setText(a.name);
-
-            ImageView imageView = (ImageView) convertView.findViewById(R.id.list_item_artist_image);
-            if (a.images.size() > 0) {
-                Picasso.with(mContext)
-                        .load(getArtistImageURL(a)).placeholder(R.drawable.default_person)
-                        .into(imageView);
-                defaultPictureArray[position] = false;
-            } else {
-                Picasso.with(getContext())
-                        .load(R.drawable.default_person).into(imageView);
-                defaultPictureArray[position] = true;
-            }
-
-            return convertView;
-        }
-
-        private String getArtistImageURL(Artist a) {
-            float scale = getResources().getDisplayMetrics().density;
-            float imageWidth = 100 * scale;
-            List<Image> images = a.images;
-            int pos = 0;
-            for (Image image : images) {
-                if (imageWidth <= Math.min(image.height, image.width)) pos = images.indexOf(image);
-            }
-            return images.get(pos).url;
         }
     }
 }
