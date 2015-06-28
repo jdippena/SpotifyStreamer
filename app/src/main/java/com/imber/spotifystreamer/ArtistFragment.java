@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.imber.spotifystreamer.adapters.ArtistViewAdapter;
+import com.imber.spotifystreamer.adapters.ArtistViewAdapter.ArtistData;
 
 import java.util.ArrayList;
 
@@ -28,18 +29,21 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import retrofit.RetrofitError;
 
-public class MainFragment extends Fragment implements MainActivity.Callback{
+public class ArtistFragment extends Fragment implements ArtistActivity.Callback{
     Context mContext;
     private final String LOG_TAG = getClass().getSimpleName();
     private ArtistViewAdapter mArtistAdapter;
     private String mPaletteIntentLabel;
     private String mPaletteIntentLabelBar;
+    private ArrayList<ArtistData> mArtistData;
+    private final String ARTIST_DATA_TAG = "artist_data";
 
-    public MainFragment() {}
+    public ArtistFragment() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         setHasOptionsMenu(true);
+        mContext = getActivity();
         mPaletteIntentLabel = getString(R.string.palette_intent_label);
         mPaletteIntentLabelBar  = getString(R.string.palette_intent_label_status_bar);
 
@@ -48,15 +52,18 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main_layout, container, false);
-        mContext = getActivity();
+        View rootView = inflater.inflate(R.layout.fragment_artist_layout, container, false);
 
         ListView listView = (ListView) rootView.findViewById(R.id.main_list_view);
-        if (mArtistAdapter == null) {
-            mArtistAdapter = new ArtistViewAdapter(mContext,
-                    R.layout.list_item_artist,
-                    new ArrayList<Artist>());
+
+        if (savedInstanceState == null) {
+            mArtistData = new ArrayList<>();
+        } else {
+            mArtistData = savedInstanceState.getParcelableArrayList(ARTIST_DATA_TAG);
         }
+        mArtistAdapter = new ArtistViewAdapter(mContext,
+                R.layout.list_item_artist,
+                mArtistData);
         listView.setAdapter(mArtistAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -70,8 +77,8 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
                 // make paletteColorBar darker than paletteColorMain
                 paletteColorBar = (paletteColorMain & 0xfefefefe) >> 1;
 
-                Intent detailIntent = new Intent(mContext, ArtistDetailActivity.class)
-                        .putExtra(Intent.EXTRA_TEXT, mArtistAdapter.getItem(position).id)
+                Intent detailIntent = new Intent(mContext, TrackActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, mArtistAdapter.getItem(position).artistId)
                         .putExtra(mPaletteIntentLabel, paletteColorMain)
                         .putExtra(mPaletteIntentLabelBar, paletteColorBar);
                 startActivity(detailIntent);
@@ -97,7 +104,7 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
+        outState.putParcelableArrayList(ARTIST_DATA_TAG, mArtistData);
     }
 
     // callback methods from activity
@@ -108,6 +115,7 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
 
     @Override
     public void submitResults(String finalQuery) {
+        //TODO: find better way to check for no results
         if (mArtistAdapter.isEmpty()) {
             Toast.makeText(mContext, "No results found", Toast.LENGTH_SHORT).show();
         }
@@ -132,7 +140,8 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
         protected void onPostExecute(ArrayList<Artist> result) {
             if (result != null) {
                 mArtistAdapter.clear();
-                mArtistAdapter.addAll(result);
+                mArtistData = Utility.createArtistDataArrayList(mContext, result);
+                mArtistAdapter.addAll(mArtistData);
             }
         }
     }

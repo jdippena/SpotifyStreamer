@@ -7,27 +7,30 @@ import android.view.MenuItem;
 import android.widget.SearchView;
 
 
-public class MainActivity extends ActionBarActivity {
+public class ArtistActivity extends ActionBarActivity {
     private final String LOG_TAG = getClass().getSimpleName();
-    MainFragment mMainFragment;
+    ArtistFragment mArtistFragment;
     private String mQuery;
     private final String QUERY_TAG = "bundle_query";
+    private boolean mUpdateResults;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_artist);
         if (savedInstanceState != null && savedInstanceState.containsKey(QUERY_TAG)) {
             mQuery = savedInstanceState.getString(QUERY_TAG);
+            mUpdateResults = false;
+        } else {
+            mUpdateResults = true;
         }
-
-        mMainFragment = (MainFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_artist);
+        mArtistFragment = (ArtistFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_artist);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_artist, menu);
 
         final MenuItem searchItem = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) searchItem.getActionView();
@@ -36,14 +39,19 @@ public class MainActivity extends ActionBarActivity {
             public boolean onQueryTextSubmit(String query) {
                 mQuery = query;
                 searchView.clearFocus();
-                mMainFragment.submitResults(query);
+                mArtistFragment.submitResults(query);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                mQuery = newText;
-                mMainFragment.updateResults(newText);
+                // this is called when the screen is rotated, so make sure to update the results
+                // only when the data actually changes
+                if (mUpdateResults) {
+                    mQuery = newText;
+                    mArtistFragment.updateResults(newText);
+                }
+                mUpdateResults = true;
                 return false;
             }
         });

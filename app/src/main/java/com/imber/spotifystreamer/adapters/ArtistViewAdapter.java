@@ -11,24 +11,21 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.imber.spotifystreamer.R;
-import com.imber.spotifystreamer.Utility;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-import kaaes.spotify.webapi.android.models.Artist;
-
-public class ArtistViewAdapter extends ArrayAdapter<Artist> {
+public class ArtistViewAdapter extends ArrayAdapter<ArtistViewAdapter.ArtistData> {
     Context mContext;
 
-    public ArtistViewAdapter(Context context, int listItemLayoutId, ArrayList<Artist> artists) {
-        super(context, listItemLayoutId, artists);
+    public ArtistViewAdapter(Context context, int listItemLayoutId, ArrayList<ArtistData> artistData) {
+        super(context, listItemLayoutId, artistData);
         mContext = context;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Artist a = getItem(position);
+        ArtistData data = getItem(position);
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_artist, null);
         }
@@ -38,32 +35,37 @@ public class ArtistViewAdapter extends ArrayAdapter<Artist> {
         }
         ViewHolder viewHolder = (ViewHolder) convertView.getTag();
 
-        viewHolder.textView.setText(a.name);
+        viewHolder.textView.setText(data.artistName);
 
-        if (a.images.size() > 0) {
+        if (data.artistPictureUrl != null) {
             Picasso.with(mContext)
-                    .load(Utility.getArtistImageURL(mContext, a)).placeholder(R.drawable.default_person)
+                    .load(data.artistPictureUrl)
+                    .placeholder(R.drawable.default_person)
                     .into(viewHolder.imageView);
         } else {
             Picasso.with(getContext())
-                    .load(R.drawable.default_person).into(viewHolder.imageView);
+                    .load(R.drawable.default_person)
+                    .into(viewHolder.imageView);
         }
         return convertView;
     }
 
+    //wrapper class for storing needed artist data for rotation purposes
     public static class ArtistData implements Parcelable {
-        String artistPictureUrl;
-        String artistName;
+        public String artistPictureUrl;
+        public String artistName;
+        public String artistId;
 
-        public ArtistData(String artistPictureUrl, String artistName) {
+        public ArtistData(String artistPictureUrl, String artistName, String artistId) {
             this.artistPictureUrl = artistPictureUrl;
             this.artistName = artistName;
+            this.artistId = artistId;
         }
 
         public static final Parcelable.Creator<ArtistData> CREATOR
                 = new Parcelable.Creator<ArtistData>() {
             public ArtistData createFromParcel(Parcel in) {
-                return new ArtistData(in.readString(), in.readString());
+                return new ArtistData(in.readString(), in.readString(), in.readString());
             }
 
             public ArtistData[] newArray(int size) {
@@ -80,6 +82,7 @@ public class ArtistViewAdapter extends ArrayAdapter<Artist> {
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeString(artistPictureUrl);
             dest.writeString(artistName);
+            dest.writeString(artistId);
         }
     }
 

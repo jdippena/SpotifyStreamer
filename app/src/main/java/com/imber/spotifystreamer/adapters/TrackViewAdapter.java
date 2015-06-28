@@ -1,6 +1,8 @@
 package com.imber.spotifystreamer.adapters;
 
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,24 +11,21 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.imber.spotifystreamer.R;
-import com.imber.spotifystreamer.Utility;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-import kaaes.spotify.webapi.android.models.Track;
-
-public class TrackViewAdapter extends ArrayAdapter<Track> {
+public class TrackViewAdapter extends ArrayAdapter<TrackViewAdapter.TrackData> {
     Context mContext;
 
-    public TrackViewAdapter(Context context, int listItemLayoutId, ArrayList<Track> data) {
+    public TrackViewAdapter(Context context, int listItemLayoutId, ArrayList<TrackData> data) {
         super(context, listItemLayoutId, data);
         mContext = context;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Track track = getItem(position);
+        TrackData data = getItem(position);
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_detail, null);
         }
@@ -35,18 +34,60 @@ public class TrackViewAdapter extends ArrayAdapter<Track> {
             convertView.setTag(new ViewHolder(convertView));
         }
         ViewHolder viewHolder = (ViewHolder) convertView.getTag();
-        viewHolder.trackTextView.setText(track.name);
-        viewHolder.albumTextView.setText(track.album.name);
+        viewHolder.trackTextView.setText(data.trackName);
+        viewHolder.albumTextView.setText(data.albumName);
 
-        if (track.album.images.size() > 0) {
-            Picasso.with(getContext()).load(Utility.getTrackAlbumArtUrl(mContext, track))
+        if (data.trackPictureUrl != null) {
+            Picasso.with(getContext())
+                    .load(data.trackPictureUrl)
                     .placeholder(R.drawable.default_album)
                     .into(viewHolder.imageView);
         } else {
-            Picasso.with(getContext()).load(R.drawable.default_album).into(viewHolder.imageView);
+            Picasso.with(getContext())
+                    .load(R.drawable.default_album)
+                    .into(viewHolder.imageView);
         }
 
         return convertView;
+    }
+
+    //wrapper class for storing needed artist data for rotation purposes
+    public static class TrackData implements Parcelable {
+        public String trackPictureUrl;
+        public String trackName;
+        public String albumName;
+        public String trackId;
+
+        public TrackData(String trackPictureUrl, String trackName, String albumName, String trackId) {
+            this.trackPictureUrl = trackPictureUrl;
+            this.trackName = trackName;
+            this.albumName = albumName;
+            this.trackId = trackId;
+        }
+
+        public static final Parcelable.Creator<TrackData> CREATOR
+                = new Parcelable.Creator<TrackData>() {
+            public TrackData createFromParcel(Parcel in) {
+                return new TrackData(in.readString(), in.readString(), in.readString(), in.readString());
+            }
+
+            public TrackData[] newArray(int size) {
+                return new TrackData[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(trackPictureUrl);
+            dest.writeString(trackName);
+            dest.writeString(albumName);
+            dest.writeString(trackId);
+        }
     }
 
     private static class ViewHolder {

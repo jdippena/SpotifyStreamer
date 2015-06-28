@@ -2,8 +2,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:name="com.imber.spotifystreamer.MainFragment"
+    android:name="com.imber.spotifystreamer.ArtistFragment"
     android:id="@+id/fragment_artist"
-    tools:context="com.imber.spotifystreamer.MainFragment"
-    tools:layout="@layout/fragment_main_layout" />
+    tools:context="com.imber.spotifystreamer.ArtistFragment"
+    tools:layout="@layout/fragment_artist_layout" />
 

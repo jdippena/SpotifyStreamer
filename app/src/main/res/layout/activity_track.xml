@@ -3,6 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/artist_detail_fragment"
-    android:name="com.imber.spotifystreamer.ArtistDetailFragment"
-    tools:context="com.imber.spotifystreamer.ArtistDetailActivity"
-    tools:layout="@layout/fragment_artist_detail_layout"/>
+    android:name="com.imber.spotifystreamer.TrackFragment"
+    tools:context="com.imber.spotifystreamer.TrackActivity"
+    tools:layout="@layout/fragment_track_layout"/>

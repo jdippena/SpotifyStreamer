@@ -14,12 +14,14 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.imber.spotifystreamer.adapters.TrackViewAdapter;
+import com.imber.spotifystreamer.adapters.TrackViewAdapter.TrackData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,13 +31,15 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
 import retrofit.RetrofitError;
 
-public class ArtistDetailFragment extends Fragment {
-    Context mContext;
-    TrackViewAdapter mTrackAdapter;
+public class TrackFragment extends Fragment {
     private final String LOG_TAG = getClass().getSimpleName();
+    private Context mContext;
+    private TrackViewAdapter mTrackAdapter;
+    private ArrayList<TrackData> mTrackData;
+    private final String TRACK_DATA_TAG = "track_data";
 
-    public ArtistDetailFragment newInstance() {
-        return new ArtistDetailFragment();
+    public TrackFragment newInstance() {
+        return new TrackFragment();
     }
 
     @Override
@@ -50,6 +54,7 @@ public class ArtistDetailFragment extends Fragment {
 
         Intent intent = parent.getIntent();
         if (intent != null && intent.hasExtra(paletteIntentLabel)) {
+            //set status and action bar colors
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 parent.getWindow().setStatusBarColor(intent.getIntExtra(paletteIntentLabelBar, Color.DKGRAY));
             }
@@ -67,26 +72,50 @@ public class ArtistDetailFragment extends Fragment {
             String countryCode = PreferenceManager.getDefaultSharedPreferences(mContext)
                     .getString(getString(R.string.pref_country_code_key),
                             getString(R.string.pref_country_code_default));
-            new FetchTracksAndAlbum().execute(artistId, countryCode);
+            if (savedInstanceState == null) {
+                new FetchTracksAndAlbum().execute(artistId, countryCode);
+            }
         }
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_artist_detail_layout, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_track_layout, container, false);
         ListView listView = (ListView) rootView.findViewById(R.id.artist_detail_list);
-        mTrackAdapter = new TrackViewAdapter(mContext, R.layout.list_item_detail, new ArrayList<Track>());
+        if (savedInstanceState == null) {
+            mTrackData = new ArrayList<>();
+        } else {
+            mTrackData = savedInstanceState.getParcelableArrayList(TRACK_DATA_TAG);
+        }
+        mTrackAdapter = new TrackViewAdapter(mContext, R.layout.list_item_detail, mTrackData);
         listView.setAdapter(mTrackAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(mContext, Player.class)
-                        .putExtra(Intent.EXTRA_TEXT, mTrackAdapter.getItem(position).id);
+                        .putExtra(Intent.EXTRA_TEXT, mTrackAdapter.getItem(position).trackId);
                 startActivity(intent);
             }
         });
         return rootView;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                startActivity(new Intent(mContext, SettingsActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(TRACK_DATA_TAG, mTrackData);
     }
 
     class FetchTracksAndAlbum extends AsyncTask<String, Void, ArrayList<Track>> {
@@ -111,7 +140,8 @@ public class ArtistDetailFragment extends Fragment {
         protected void onPostExecute(ArrayList<Track> result) {
             if (result != null) {
                 mTrackAdapter.clear();
-                mTrackAdapter.addAll(result);
+                mTrackData = Utility.createTrackDataArrayList(mContext, result);
+                mTrackAdapter.addAll(mTrackData);
             }
         }
     }
