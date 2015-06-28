@@ -1,6 +1,8 @@
 package com.imber.spotifystreamer.adapters;
 
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,8 +26,6 @@ public class ArtistViewAdapter extends ArrayAdapter<Artist> {
         mContext = context;
     }
 
-
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         Artist a = getItem(position);
@@ -48,8 +48,39 @@ public class ArtistViewAdapter extends ArrayAdapter<Artist> {
             Picasso.with(getContext())
                     .load(R.drawable.default_person).into(viewHolder.imageView);
         }
-
         return convertView;
+    }
+
+    public static class ArtistData implements Parcelable {
+        String artistPictureUrl;
+        String artistName;
+
+        public ArtistData(String artistPictureUrl, String artistName) {
+            this.artistPictureUrl = artistPictureUrl;
+            this.artistName = artistName;
+        }
+
+        public static final Parcelable.Creator<ArtistData> CREATOR
+                = new Parcelable.Creator<ArtistData>() {
+            public ArtistData createFromParcel(Parcel in) {
+                return new ArtistData(in.readString(), in.readString());
+            }
+
+            public ArtistData[] newArray(int size) {
+                return new ArtistData[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(artistPictureUrl);
+            dest.writeString(artistName);
+        }
     }
 
     private static class ViewHolder {

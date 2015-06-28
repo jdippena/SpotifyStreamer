@@ -95,6 +95,13 @@ public class MainFragment extends Fragment implements MainActivity.Callback{
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+    }
+
+    // callback methods from activity
+    @Override
     public void updateResults(String newText) {
         new FetchArtistAndPicture().execute(newText);
     }

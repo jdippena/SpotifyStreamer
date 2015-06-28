@@ -17,12 +17,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.imber.spotifystreamer.adapters.TrackViewAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -113,37 +110,9 @@ public class ArtistDetailFragment extends Fragment {
         @Override
         protected void onPostExecute(ArrayList<Track> result) {
             if (result != null) {
+                mTrackAdapter.clear();
                 mTrackAdapter.addAll(result);
             }
         }
     }
-
-    class TrackViewAdapter extends ArrayAdapter<Track> {
-        TrackViewAdapter(Context context, int listItemLayoutId, ArrayList<Track> data) {
-            super(context, listItemLayoutId, data);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            Track track = getItem(position);
-            if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_detail, null);
-            }
-            ((TextView) convertView.findViewById(R.id.list_item_detail_track)).setText(track.name);
-            ((TextView) convertView.findViewById(R.id.list_item_detail_album)).setText(track.album.name);
-
-            ImageView imageView = (ImageView) convertView.findViewById(R.id.list_item_detail_image);
-
-            if (track.album.images.size() > 0) {
-                Picasso.with(getContext()).load(Utility.getTrackAlbumArtUrl(mContext, track))
-                        .placeholder(R.drawable.default_album)
-                        .into(imageView);
-            } else {
-                Picasso.with(getContext()).load(R.drawable.default_album).into(imageView);
-            }
-
-            return convertView;
-        }
-    }
-
 }
