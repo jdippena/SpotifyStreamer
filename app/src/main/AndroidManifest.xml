@@ -43,6 +43,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".TrackActivity" />
         </activity>
+        <service
+            android:name=".SSService"
+            android:exported="false"
+            android:stopWithTask="true"/>
     </application>
 
 </manifest>

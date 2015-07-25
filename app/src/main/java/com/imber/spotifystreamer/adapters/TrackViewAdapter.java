@@ -56,19 +56,25 @@ public class TrackViewAdapter extends ArrayAdapter<TrackViewAdapter.TrackData> {
         public String trackPictureUrl;
         public String trackName;
         public String albumName;
+        public String artistName;
         public String trackId;
+        public String trackUrl;
 
-        public TrackData(String trackPictureUrl, String trackName, String albumName, String trackId) {
+        public TrackData(String trackPictureUrl, String trackName, String albumName, String artistName,
+                         String trackId, String trackUrl) {
             this.trackPictureUrl = trackPictureUrl;
             this.trackName = trackName;
             this.albumName = albumName;
+            this.artistName = artistName;
             this.trackId = trackId;
+            this.trackUrl = trackUrl;
         }
 
         public static final Parcelable.Creator<TrackData> CREATOR
                 = new Parcelable.Creator<TrackData>() {
             public TrackData createFromParcel(Parcel in) {
-                return new TrackData(in.readString(), in.readString(), in.readString(), in.readString());
+                return new TrackData(in.readString(), in.readString(), in.readString(), in.readString(),
+                        in.readString(), in.readString());
             }
 
             public TrackData[] newArray(int size) {
@@ -86,7 +92,9 @@ public class TrackViewAdapter extends ArrayAdapter<TrackViewAdapter.TrackData> {
             dest.writeString(trackPictureUrl);
             dest.writeString(trackName);
             dest.writeString(albumName);
+            dest.writeString(artistName);
             dest.writeString(trackId);
+            dest.writeString(trackUrl);
         }
     }
 

@@ -2,13 +2,9 @@ package com.imber.spotifystreamer;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -29,14 +25,15 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import retrofit.RetrofitError;
 
-public class ArtistFragment extends Fragment implements ArtistActivity.Callback{
-    Context mContext;
+public class ArtistFragment extends Fragment implements Util.Listeners.OnSearchViewTextListener {
+    private Context mContext;
+    private Util.Listeners.OnArtistSelectedListener mArtistSelectedListener;
     private final String LOG_TAG = getClass().getSimpleName();
     private ArtistViewAdapter mArtistAdapter;
-    private String mPaletteIntentLabel;
-    private String mPaletteIntentLabelBar;
     private ArrayList<ArtistData> mArtistData;
     private final String ARTIST_DATA_TAG = "artist_data";
+    private int mPositionSelected;
+    private final String POS_SELECTED_TAG = "pos";
 
     public ArtistFragment() {}
 
@@ -44,8 +41,12 @@ public class ArtistFragment extends Fragment implements ArtistActivity.Callback{
     public void onCreate(Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         mContext = getActivity();
-        mPaletteIntentLabel = getString(R.string.palette_intent_label);
-        mPaletteIntentLabelBar  = getString(R.string.palette_intent_label_status_bar);
+        try {
+            mArtistSelectedListener = (Util.Listeners.OnArtistSelectedListener) getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString() +
+                    " must implement OnArtistSelectedListener");
+        }
 
         super.onCreate(savedInstanceState);
     }
@@ -54,7 +55,7 @@ public class ArtistFragment extends Fragment implements ArtistActivity.Callback{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_artist_layout, container, false);
 
-        ListView listView = (ListView) rootView.findViewById(R.id.main_list_view);
+        final ListView listView = (ListView) rootView.findViewById(R.id.artist_list_view);
 
         if (savedInstanceState == null) {
             mArtistData = new ArrayList<>();
@@ -68,22 +69,21 @@ public class ArtistFragment extends Fragment implements ArtistActivity.Callback{
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                int paletteColorMain;
-                int paletteColorBar;
-                // get palette colors from thumbnails to color the action and status bar
-                ImageView imageView = (ImageView) view.findViewById(R.id.list_item_artist_image);
-                Bitmap b = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-                paletteColorMain = Palette.from(b).generate().getMutedColor(Color.GRAY);
-                // make paletteColorBar darker than paletteColorMain
-                paletteColorBar = (paletteColorMain & 0xfefefefe) >> 1;
-
-                Intent detailIntent = new Intent(mContext, TrackActivity.class)
-                        .putExtra(Intent.EXTRA_TEXT, mArtistAdapter.getItem(position).artistId)
-                        .putExtra(mPaletteIntentLabel, paletteColorMain)
-                        .putExtra(mPaletteIntentLabelBar, paletteColorBar);
-                startActivity(detailIntent);
+                mPositionSelected = position;
+                mArtistSelectedListener.onArtistItemSelected(
+                        mArtistAdapter.getItem(position),
+                        (ImageView) view.findViewById(R.id.list_item_artist_image));
             }
         });
+        if (savedInstanceState != null && savedInstanceState.containsKey(POS_SELECTED_TAG)) {
+            mPositionSelected = savedInstanceState.getInt(POS_SELECTED_TAG);
+            listView.post(new Runnable() {
+                @Override
+                public void run() {
+                    listView.smoothScrollToPosition(mPositionSelected);
+                }
+            });
+        }
         return rootView;
     }
 
@@ -105,9 +105,10 @@ public class ArtistFragment extends Fragment implements ArtistActivity.Callback{
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelableArrayList(ARTIST_DATA_TAG, mArtistData);
+        outState.putInt(POS_SELECTED_TAG, mPositionSelected);
     }
 
-    // callback methods from activity
+    // callback methods from search view
     @Override
     public void updateResults(String newText) {
         new FetchArtistAndPicture().execute(newText);
@@ -140,7 +141,7 @@ public class ArtistFragment extends Fragment implements ArtistActivity.Callback{
         protected void onPostExecute(ArrayList<Artist> result) {
             if (result != null) {
                 mArtistAdapter.clear();
-                mArtistData = Utility.createArtistDataArrayList(mContext, result);
+                mArtistData = Util.createArtistDataArrayList(mContext, result);
                 mArtistAdapter.addAll(mArtistData);
             }
         }

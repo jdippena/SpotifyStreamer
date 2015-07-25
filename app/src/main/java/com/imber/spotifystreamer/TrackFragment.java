@@ -1,20 +1,17 @@
 package com.imber.spotifystreamer;
 
-import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -37,9 +34,25 @@ public class TrackFragment extends Fragment {
     private TrackViewAdapter mTrackAdapter;
     private ArrayList<TrackData> mTrackData;
     private final String TRACK_DATA_TAG = "track_data";
+    private String mArtistName;
+    private final String ARTIST_NAME_TAG = "artist_name";
 
-    public TrackFragment newInstance() {
-        return new TrackFragment();
+    public static TrackFragment newInstance(Context context, String artistId, String artistName) {
+        TrackFragment tf = new TrackFragment();
+        Bundle args = new Bundle();
+        args.putString(context.getString(R.string.artist_id_label), artistId);
+        args.putString(context.getString(R.string.artist_name_label), artistName);
+        tf.setArguments(args);
+        return tf;
+    }
+
+    public static TrackFragment newInstance(Context context, String artistId, String artistName, int paletteColorMain, int paletteColorBar) {
+        TrackFragment tf = newInstance(context, artistId, artistName);
+        Bundle args = tf.getArguments();
+        args.putInt(context.getString(R.string.palette_color_main_label), paletteColorMain);
+        args.putInt(context.getString(R.string.palette_color_bar_label), paletteColorBar);
+        tf.setArguments(args);
+        return tf;
     }
 
     @Override
@@ -49,26 +62,24 @@ public class TrackFragment extends Fragment {
         mContext = getActivity();
         ActionBarActivity parent = (ActionBarActivity) getActivity();
 
-        final String paletteIntentLabel = getString(R.string.palette_intent_label);
-        final String paletteIntentLabelBar = getString(R.string.palette_intent_label_status_bar);
-
-        Intent intent = parent.getIntent();
-        if (intent != null && intent.hasExtra(paletteIntentLabel)) {
-            //set status and action bar colors
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                parent.getWindow().setStatusBarColor(intent.getIntExtra(paletteIntentLabelBar, Color.DKGRAY));
-            }
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(mContext.getString(R.string.artist_id_label))) {
+            ActionBar bar = null;
             if (parent.getSupportActionBar() != null) {
-                ActionBar bar = parent.getSupportActionBar();
-                bar.setBackgroundDrawable(new ColorDrawable(
-                        intent.getIntExtra(paletteIntentLabel, Color.GRAY)
-                ));
-                String artistName = intent.getStringExtra(getString(R.string.artist_name_intent_label));
-                bar.setSubtitle(artistName);
+                bar = parent.getSupportActionBar();
             }
-
-            //get artist id from intent
-            String artistId = intent.getStringExtra(Intent.EXTRA_TEXT);
+            if (args.containsKey(mContext.getString(R.string.palette_color_main_label))) {
+                int paletteColorMain = args.getInt(mContext.getString(R.string.palette_color_main_label));
+                int paletteColorBar = args.getInt(mContext.getString(R.string.palette_color_bar_label));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    parent.getWindow().setStatusBarColor(paletteColorBar);
+                }
+                if (bar != null) bar.setBackgroundDrawable(new ColorDrawable(paletteColorMain));
+            }
+            String artistName = args.getString(mContext.getString(R.string.artist_name_label));
+            mArtistName = artistName;
+            if (bar != null) bar.setSubtitle(artistName);
+            String artistId = args.getString(mContext.getString(R.string.artist_id_label));
             String countryCode = PreferenceManager.getDefaultSharedPreferences(mContext)
                     .getString(getString(R.string.pref_country_code_key),
                             getString(R.string.pref_country_code_default));
@@ -82,40 +93,38 @@ public class TrackFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_track_layout, container, false);
-        ListView listView = (ListView) rootView.findViewById(R.id.artist_detail_list);
+        ListView listView = (ListView) rootView.findViewById(R.id.track_list);
         if (savedInstanceState == null) {
             mTrackData = new ArrayList<>();
         } else {
             mTrackData = savedInstanceState.getParcelableArrayList(TRACK_DATA_TAG);
+            mArtistName = savedInstanceState.getString(ARTIST_NAME_TAG);
+            ActionBar bar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+            if (bar != null) bar.setSubtitle(mArtistName);
         }
         mTrackAdapter = new TrackViewAdapter(mContext, R.layout.list_item_detail, mTrackData);
         listView.setAdapter(mTrackAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(mContext, Player.class)
-                        .putExtra(Intent.EXTRA_TEXT, mTrackAdapter.getItem(position).trackId);
-                startActivity(intent);
+                // calls ArtistActivity in large layout, TrackActivity in small layout
+                try {
+                    ((Util.Listeners.OnTrackSelectedListener) getActivity())
+                            .onTrackItemSelected(mTrackData, position);
+                } catch (ClassCastException e) {
+                    throw new ClassCastException(getActivity().toString() +
+                            " must implement OnTrackSelectedListener");
+                }
             }
         });
         return rootView;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_settings:
-                startActivity(new Intent(mContext, SettingsActivity.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelableArrayList(TRACK_DATA_TAG, mTrackData);
+        outState.putString(ARTIST_NAME_TAG, mArtistName);
     }
 
     class FetchTracksAndAlbum extends AsyncTask<String, Void, ArrayList<Track>> {
@@ -140,7 +149,7 @@ public class TrackFragment extends Fragment {
         protected void onPostExecute(ArrayList<Track> result) {
             if (result != null) {
                 mTrackAdapter.clear();
-                mTrackData = Utility.createTrackDataArrayList(mContext, result);
+                mTrackData = Util.createTrackDataArrayList(mContext, result);
                 mTrackAdapter.addAll(mTrackData);
             }
         }

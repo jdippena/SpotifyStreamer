@@ -1,5 +1,7 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:id="@+id/fragment_player"
-    android:name="com.imber.spotifystreamer.PlayerFragment"
-    tools:layout="@layout/fragment_player_layout" android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/player_fragment_container"
+    tools:context="com.imber.spotifystreamer.TrackActivity"
+    tools:layout="@layout/fragment_player_layout"/>

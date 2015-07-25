@@ -11,14 +11,24 @@
 
     <string name="title_activity_player">Player</string>
 
+    <!--String for passing intent from notification to ArtistActivity-->
+    <string name="query_text_label" translatable="false">query_text</string>
+    <string name="artist_data_label" translatable="false">artist_data</string>
 
     <!--Strings for passing intent to TrackActivity-->
-    <string name="palette_intent_label" translatable="false">palette_int</string>
-    <string name="palette_intent_label_status_bar" translatable="false">palette_int_status_bar</string>
-    <string name="artist_name_intent_label" translatable="false">artist_name</string>
+    <string name="artist_id_label" translatable="false">artist_id</string>
+    <string name="artist_name_label" translatable="false">artist_name</string>
+    <string name="palette_color_main_label" translatable="false">palette_int</string>
+    <string name="palette_color_bar_label" translatable="false">palette_int_status_bar</string>
+
+    <!--Strings for passing intent to Player and SSService-->
+    <string name="track_data_label" translatable="false">track_data</string>
+    <string name="track_position_label" translatable="false">track_position</string>
+
+    <string name="track_progress_label" translatable="false">track_progress</string>
+    <string name="notification_action_label" translatable="false">notification_action_label</string>
 
     <string name="pref_country_code_title">Country Code</string>
     <string name="pref_country_code_key" translatable="false">countryCode</string>
     <string name="pref_country_code_default" translatable="false">US</string>
-
 </resources>
