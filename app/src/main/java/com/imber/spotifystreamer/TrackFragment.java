@@ -1,9 +1,7 @@
 package com.imber.spotifystreamer;
 
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -46,15 +44,6 @@ public class TrackFragment extends Fragment {
         return tf;
     }
 
-    public static TrackFragment newInstance(Context context, String artistId, String artistName, int paletteColorMain, int paletteColorBar) {
-        TrackFragment tf = newInstance(context, artistId, artistName);
-        Bundle args = tf.getArguments();
-        args.putInt(context.getString(R.string.palette_color_main_label), paletteColorMain);
-        args.putInt(context.getString(R.string.palette_color_bar_label), paletteColorBar);
-        tf.setArguments(args);
-        return tf;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,14 +56,6 @@ public class TrackFragment extends Fragment {
             ActionBar bar = null;
             if (parent.getSupportActionBar() != null) {
                 bar = parent.getSupportActionBar();
-            }
-            if (args.containsKey(mContext.getString(R.string.palette_color_main_label))) {
-                int paletteColorMain = args.getInt(mContext.getString(R.string.palette_color_main_label));
-                int paletteColorBar = args.getInt(mContext.getString(R.string.palette_color_bar_label));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    parent.getWindow().setStatusBarColor(paletteColorBar);
-                }
-                if (bar != null) bar.setBackgroundDrawable(new ColorDrawable(paletteColorMain));
             }
             String artistName = args.getString(mContext.getString(R.string.artist_name_label));
             mArtistName = artistName;
@@ -102,7 +83,7 @@ public class TrackFragment extends Fragment {
             ActionBar bar = ((ActionBarActivity) getActivity()).getSupportActionBar();
             if (bar != null) bar.setSubtitle(mArtistName);
         }
-        mTrackAdapter = new TrackViewAdapter(mContext, R.layout.list_item_detail, mTrackData);
+        mTrackAdapter = new TrackViewAdapter(mContext, R.layout.list_item_track, mTrackData);
         listView.setAdapter(mTrackAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -125,6 +106,12 @@ public class TrackFragment extends Fragment {
         super.onSaveInstanceState(outState);
         outState.putParcelableArrayList(TRACK_DATA_TAG, mTrackData);
         outState.putString(ARTIST_NAME_TAG, mArtistName);
+    }
+
+    // only used for checking if trackFragment needs to be updated in tablet layouts when
+    // notification is clicked
+    public String getArtistName() {
+        return mArtistName;
     }
 
     class FetchTracksAndAlbum extends AsyncTask<String, Void, ArrayList<Track>> {

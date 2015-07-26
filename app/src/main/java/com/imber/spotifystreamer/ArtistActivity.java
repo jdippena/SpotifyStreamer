@@ -3,17 +3,13 @@ package com.imber.spotifystreamer;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ImageView;
 import android.widget.SearchView;
 
 import com.imber.spotifystreamer.adapters.ArtistViewAdapter;
@@ -43,7 +39,7 @@ public class ArtistActivity extends ActionBarActivity
         mArtistFragment = (ArtistFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_artist);
         mLargeLayout = getResources().getBoolean(R.bool.large_layout);
 
-        handleIntent();
+        handleIntent(getIntent());
         if (savedInstanceState != null && savedInstanceState.containsKey(getString(R.string.query_text_label))) {
             mQuery = savedInstanceState.getString(getString(R.string.query_text_label));
             mUpdateResults = false;
@@ -107,7 +103,7 @@ public class ArtistActivity extends ActionBarActivity
 
     // listener for selection in ArtistFragment
     @Override
-    public void onArtistItemSelected(ArtistViewAdapter.ArtistData data, ImageView artistImage) {
+    public void onArtistItemSelected(ArtistViewAdapter.ArtistData data) {
         mSSService.setArtistData(data);
         if (mLargeLayout) {
             getSupportFragmentManager().beginTransaction()
@@ -116,22 +112,10 @@ public class ArtistActivity extends ActionBarActivity
                             TRACK_FRAGMENT_TAG)
                     .commit();
         } else {
-            int paletteColorMain;
-            int paletteColorBar;
-            // get palette colors from thumbnails to color the action and status bar
-            Bitmap b = ((BitmapDrawable) artistImage.getDrawable()).getBitmap();
-            paletteColorMain = Palette.from(b).generate().getMutedColor(Color.GRAY);
-            // make paletteColorBar darker than paletteColorMain
-            paletteColorBar = (paletteColorMain & 0xfefefefe) >> 1;
-
             Intent detailIntent = new Intent(this, TrackActivity.class)
                     .putExtra(getString(R.string.artist_id_label), data.artistId)
                     .putExtra(getString(R.string.artist_name_label),
-                            data.artistName)
-                    .putExtra(getString(R.string.palette_color_main_label),
-                            paletteColorMain)
-                    .putExtra(getString(R.string.palette_color_bar_label),
-                            paletteColorBar);
+                            data.artistName);
             startActivity(detailIntent);
         }
     }
@@ -144,27 +128,37 @@ public class ArtistActivity extends ActionBarActivity
         pf.show(getSupportFragmentManager(), PLAYER_FRAGMENT_TAG);
     }
 
-    private void handleIntent() {
-        Intent intent = getIntent();
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
         if (intent != null && intent.hasExtra(getString(R.string.query_text_label))) {
             mQuery = intent.getStringExtra(getString(R.string.query_text_label));
             mArtistFragment.updateResults(mQuery);
             if (mLargeLayout) {
-                // show the track fragment
+                FragmentManager fm = getSupportFragmentManager();
+                TrackFragment tf = (TrackFragment) fm.findFragmentByTag(TRACK_FRAGMENT_TAG);
                 ArtistViewAdapter.ArtistData data = intent
-                        .getParcelableExtra(getString(R.string.track_data_label));
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.track_fragment_container,
-                                TrackFragment.newInstance(this, data.artistId, data.artistName),
-                                TRACK_FRAGMENT_TAG)
-                        .commit();
-                ArrayList<TrackViewAdapter.TrackData> trackData = intent.getParcelableArrayListExtra(
-                        getString(R.string.track_data_label)
-                );
-                // show the dialog player
-                int trackPosition = intent.getIntExtra(getString(R.string.track_position_label), 0);
-                PlayerFragment pf = PlayerFragment.newInstance(this, trackData, trackPosition);
-                pf.show(getSupportFragmentManager(), PLAYER_FRAGMENT_TAG);
+                        .getParcelableExtra(getString(R.string.artist_data_label));
+                if (tf == null || !tf.getArtistName().equals(data.artistName)) {
+                    // show the track fragment
+                    fm.beginTransaction()
+                            .replace(R.id.track_fragment_container,
+                                    TrackFragment.newInstance(this, data.artistId, data.artistName),
+                                    TRACK_FRAGMENT_TAG)
+                            .commit();
+                }
+                if (fm.findFragmentByTag(PLAYER_FRAGMENT_TAG) == null) {
+                    ArrayList<TrackViewAdapter.TrackData> trackData =
+                            intent.getParcelableArrayListExtra(getString(R.string.track_data_label));
+                    // show the dialog player
+                    int trackPosition = intent.getIntExtra(getString(R.string.track_position_label), 0);
+                    PlayerFragment pf = PlayerFragment.newInstance(this, trackData, trackPosition);
+                    pf.show(getSupportFragmentManager(), PLAYER_FRAGMENT_TAG);
+                }
             }
         }
     }

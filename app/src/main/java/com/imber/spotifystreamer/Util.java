@@ -1,6 +1,5 @@
 package com.imber.spotifystreamer;
 
-import android.app.ActivityManager;
 import android.content.Context;
 import android.widget.ImageView;
 
@@ -91,46 +90,6 @@ public class Util {
         return String.format(result + "%02d", seconds);
     }
 
-    public static ArrayList<String> extractTrackIds(ArrayList<TrackData> trackData) {
-        ArrayList<String> ids = new ArrayList<>(trackData.size());
-        for (int i = 0; i < trackData.size(); i++) {
-            ids.add(i, trackData.get(i).trackId);
-        }
-        return ids;
-    }
-
-    public static ArrayList<String> extractTrackURLs(ArrayList<TrackData> trackData) {
-        ArrayList<String> urls = new ArrayList<>(trackData.size());
-        for (int i = 0; i < trackData.size(); i++) {
-            urls.add(i, trackData.get(i).trackUrl);
-        }
-        return urls;
-    }
-
-    public static ArrayList<String> extractTrackNames(ArrayList<TrackData> trackData) {
-        ArrayList<String> names = new ArrayList<>(trackData.size());
-        for (int i = 0; i < trackData.size(); i++) {
-            names.add(i, trackData.get(i).trackName);
-        }
-        return names;
-    }
-
-    public static ArrayList<String> extractAlbumNames(ArrayList<TrackData> trackData) {
-        ArrayList<String> names = new ArrayList<>(trackData.size());
-        for (int i = 0; i < trackData.size(); i++) {
-            names.add(i, trackData.get(i).albumName);
-        }
-        return names;
-    }
-
-    public static boolean isServiceRunning(Context context, Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) return true;
-        }
-        return false;
-    }
-
     public static class Listeners {
         public interface OnSearchViewTextListener {
             void updateResults(String newText);
@@ -138,7 +97,7 @@ public class Util {
         }
 
         public interface OnArtistSelectedListener {
-            void onArtistItemSelected(ArtistData data, ImageView artistImage);
+            void onArtistItemSelected(ArtistData data);
         }
 
         public interface OnTrackSelectedListener {

@@ -1,7 +1,6 @@
 package com.imber.spotifystreamer;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -24,9 +23,7 @@ public class TrackActivity extends ActionBarActivity implements Util.Listeners.O
             TrackFragment tf = TrackFragment.newInstance(
                     this,
                     intent.getStringExtra(getString(R.string.artist_id_label)),
-                    intent.getStringExtra(getString(R.string.artist_name_label)),
-                    intent.getIntExtra(getString(R.string.palette_color_main_label), Color.GRAY),
-                    intent.getIntExtra(getString(R.string.palette_color_bar_label), (Color.GRAY & 0xfefefefe) >> 1)
+                    intent.getStringExtra(getString(R.string.artist_name_label))
             );
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.track_fragment_container, tf).commit();

@@ -11,7 +11,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -70,9 +69,7 @@ public class ArtistFragment extends Fragment implements Util.Listeners.OnSearchV
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 mPositionSelected = position;
-                mArtistSelectedListener.onArtistItemSelected(
-                        mArtistAdapter.getItem(position),
-                        (ImageView) view.findViewById(R.id.list_item_artist_image));
+                mArtistSelectedListener.onArtistItemSelected(mArtistAdapter.getItem(position));
             }
         });
         if (savedInstanceState != null && savedInstanceState.containsKey(POS_SELECTED_TAG)) {
@@ -116,7 +113,6 @@ public class ArtistFragment extends Fragment implements Util.Listeners.OnSearchV
 
     @Override
     public void submitResults(String finalQuery) {
-        //TODO: find better way to check for no results
         if (mArtistAdapter.isEmpty()) {
             Toast.makeText(mContext, "No results found", Toast.LENGTH_SHORT).show();
         }

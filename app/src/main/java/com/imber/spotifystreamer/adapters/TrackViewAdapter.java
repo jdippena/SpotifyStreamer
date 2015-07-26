@@ -27,7 +27,7 @@ public class TrackViewAdapter extends ArrayAdapter<TrackViewAdapter.TrackData> {
     public View getView(int position, View convertView, ViewGroup parent) {
         TrackData data = getItem(position);
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_detail, null);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_track, null);
         }
 
         if (convertView.getTag() == null) {

@@ -103,13 +103,15 @@ public class SSService extends Service implements MediaPlayer.OnPreparedListener
         Intent resultIntent;
         // set up intents for large layouts
         if (getResources().getBoolean(R.bool.large_layout)) {
-            resultIntent = new Intent()
+            resultIntent = new Intent(this, ArtistActivity.class)
                     .putExtra(getString(R.string.query_text_label), mQuery)
                     .putExtra(getString(R.string.artist_data_label), mArtistData)
                     .putParcelableArrayListExtra(getString(R.string.track_data_label), mTrackData)
                     .putExtra(getString(R.string.track_position_label), mTrackPosition);
-            contentIntent = PendingIntent.getActivity(this, 0,
-                    resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            TaskStackBuilder builder = TaskStackBuilder.create(this);
+            builder.addParentStack(ArtistActivity.class);
+            builder.addNextIntent(resultIntent);
+            contentIntent = builder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         } else {
             resultIntent = new Intent(this, Player.class)
                     .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -126,8 +128,7 @@ public class SSService extends Service implements MediaPlayer.OnPreparedListener
             builder.editIntentAt(1)
                     .putExtra(getString(R.string.artist_id_label), mArtistData.artistId)
                     .putExtra(getString(R.string.artist_name_label), mArtistData.artistName);
-            contentIntent = builder.getPendingIntent(0,
-                    PendingIntent.FLAG_UPDATE_CURRENT);
+            contentIntent = builder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         }
 
         NotificationCompat.Action playPauseAction;
@@ -170,7 +171,7 @@ public class SSService extends Service implements MediaPlayer.OnPreparedListener
                 .setContentTitle(mTrackData.get(mTrackPosition).trackName)
                 .setContentText(mTrackData.get(mTrackPosition).albumName)
                 .setContentIntent(contentIntent)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_notification)
                 .addAction(previousAction)
                 .addAction(playPauseAction)
                 .addAction(nextAction)

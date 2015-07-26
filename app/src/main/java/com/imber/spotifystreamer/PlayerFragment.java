@@ -199,6 +199,7 @@ public class PlayerFragment extends DialogFragment
     public void onStopTrackingTouch(SeekBar seekBar) {
         if (mSSService != null && mSSService.isSetup()) {
             mSSService.seekToAndPlay(seekBar.getProgress());
+            mPlay.setBackgroundResource(android.R.drawable.ic_media_pause);
         }
         if (mSSService != null && mSeekBar.getProgress() >= PREVIEW_TRACK_LENGTH_MS) {
             mSSService.skipForward(mTrackPosition + 1);
@@ -270,6 +271,11 @@ public class PlayerFragment extends DialogFragment
             mSSService = ((SSService.SSBinder) service).getService();
             mSSService.setCompletionListenerClient(PlayerFragment.this);
             mSSService.setNotificationPreviousClickListener(PlayerFragment.this);
+            if (mSSService.isPlaying()) {
+                mPlay.setBackgroundResource(android.R.drawable.ic_media_pause);
+            } else {
+                mPlay.setBackgroundResource(android.R.drawable.ic_media_play);
+            }
             if (!mSSService.isSetup()
                     || !mSSService.getTrackId().equals(mTrackData.get(mTrackPosition).trackId)) {
                 mSSService.setupAndStartPlayer(mTrackData, mTrackPosition);
@@ -301,6 +307,7 @@ public class PlayerFragment extends DialogFragment
             mProgress.setText("0:00");
             mEnd.setText(Util.formatTrackLength(PREVIEW_TRACK_LENGTH_MS));
             mSeekBar.setMax(PREVIEW_TRACK_LENGTH_MS);
+            mPlay.setBackgroundResource(android.R.drawable.ic_media_pause);
         }
     }
 
