@@ -3,7 +3,6 @@ package com.imber.spotifystreamer;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
 import android.view.MenuItem;
 
 import com.imber.spotifystreamer.adapters.TrackViewAdapter;
@@ -33,14 +32,6 @@ public class Player extends AppCompatActivity {
         }
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_player, menu);
-        return true;
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -51,5 +42,4 @@ public class Player extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
 }

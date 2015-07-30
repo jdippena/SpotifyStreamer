@@ -111,5 +111,10 @@ public class Util {
         public interface OnNotificationPreviousClickListener {
             void onNotificationPreviousClick();
         }
+
+        public interface OnPlaybackStartEndListener {
+            void onPlaybackStarted();
+            void onPlaybackEnded();
+        }
     }
 }

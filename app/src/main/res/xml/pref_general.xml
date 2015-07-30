@@ -11,5 +11,9 @@
         android:capitalize="words"
         android:singleLine="true"
         android:maxLines="1" />
+    <CheckBoxPreference
+        android:key="@string/pref_show_notification_key"
+        android:title="@string/pref_show_notification_title"
+        android:defaultValue="true"/>
 
 </PreferenceScreen>

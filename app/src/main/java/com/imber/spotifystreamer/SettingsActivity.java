@@ -16,7 +16,7 @@ import android.preference.PreferenceManager;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements Preference.OnPreferenceChangeListener{
     /**
      * Determines whether to always show the simplified settings UI, where
      * settings are presented in a single list. When false, settings are shown
@@ -32,6 +32,12 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_country_code_key)));
     }
 
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+        preference.setSummary(newValue.toString());
+        return true;
+    }
+
     /**
      * Binds a preference's summary to its value. More specifically, when the
      * preference's value is changed, its summary (line of text below the
@@ -40,20 +46,14 @@ public class SettingsActivity extends PreferenceActivity {
      * dependent on the type of preference.
      * */
 
-    private static void bindPreferenceSummaryToValue(Preference preference) {
+    private void bindPreferenceSummaryToValue(Preference preference) {
         // Set the listener to watch for value changes.
-        Preference.OnPreferenceChangeListener listener = new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                preference.setSummary(newValue.toString());
-                return true;
-            }
-        };
-        preference.setOnPreferenceChangeListener(listener);
+
+        preference.setOnPreferenceChangeListener(this);
 
         // Trigger the listener immediately with the preference's
         // current value.
-        listener.onPreferenceChange(preference,
+        onPreferenceChange(preference,
                 PreferenceManager
                         .getDefaultSharedPreferences(preference.getContext())
                         .getString(preference.getKey(), ""));

@@ -10,8 +10,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -38,6 +42,7 @@ public class PlayerFragment extends DialogFragment
     private final int TRACK_LENGTH_SKIP_LENGTH_MS = 3000;
 
     private Context mContext;
+    private ShareActionProvider mShareActionProvider;
     private SSService mSSService;
     private SSServiceConnection mConnection = new SSServiceConnection();
     private PlayerFragReceiver mReceiver = new PlayerFragReceiver();
@@ -76,6 +81,7 @@ public class PlayerFragment extends DialogFragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getActivity();
+        if (!getResources().getBoolean(R.bool.large_layout)) setHasOptionsMenu(true);
 
         // if savedInstanceState is null, use arguments to get data, else, use the savedInstanceState
         if (savedInstanceState == null) {
@@ -123,7 +129,7 @@ public class PlayerFragment extends DialogFragment
                 if (mSSService.isPlaying()) {
                     mSSService.pause();
                     mPlay.setBackgroundResource(android.R.drawable.ic_media_play);
-                } else {
+                } else if (mSSService.isSetup()) {
                     mSSService.play();
                     mPlay.setBackgroundResource(android.R.drawable.ic_media_pause);
                 }
@@ -155,6 +161,16 @@ public class PlayerFragment extends DialogFragment
 
         updateView(mTrackData.get(mTrackPosition).trackId);
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // this will only get called in phone layout
+        inflater.inflate(R.menu.menu_player, menu);
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_share));
+        if (mShareActionProvider != null) {
+            mShareActionProvider.setShareIntent(createShareIntent());
+        }
     }
 
     @Override
@@ -226,6 +242,14 @@ public class PlayerFragment extends DialogFragment
         }
     }
 
+    private Intent createShareIntent() {
+        return new Intent(Intent.ACTION_SEND)
+                .setType("text/plain")
+                .putExtra(Intent.EXTRA_TEXT, mTrackData.get(mTrackPosition).trackName + " " +
+                        mTrackData.get(mTrackPosition).trackUrl)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+    }
+
     private void scheduleTimerTask() {
         mTimer.schedule(new TimerTask() {
             @Override
@@ -290,7 +314,6 @@ public class PlayerFragment extends DialogFragment
     }
     // the only reason another network operation is needed here is to get the optimum picture resolution
     // and its url from server
-    //TODO: remove this ?
     class SetupViewTask extends AsyncTask<String, Void, Track> {
         @Override
         protected Track doInBackground(String... params) {
@@ -308,6 +331,10 @@ public class PlayerFragment extends DialogFragment
             mEnd.setText(Util.formatTrackLength(PREVIEW_TRACK_LENGTH_MS));
             mSeekBar.setMax(PREVIEW_TRACK_LENGTH_MS);
             mPlay.setBackgroundResource(android.R.drawable.ic_media_pause);
+            if (mShareActionProvider != null) {
+                mShareActionProvider.setShareIntent(createShareIntent());
+            }
+
         }
     }
 

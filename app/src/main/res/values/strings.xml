@@ -1,15 +1,16 @@
 <resources>
     <string name="app_name">Spotify Streamer</string>
 
-    <string name="search_hint">Enter artist name</string>
     <string name="title_activity_artist_detail">Top Ten Tracks</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_player">Player</string>
+
+    <string name="search_hint">Enter artist name</string>
 
     <string name="action_settings">Settings</string>
     <string name="action_search">Search</string>
-
-    <string name="title_activity_settings">Settings</string>
-
-    <string name="title_activity_player">Player</string>
+    <string name="title_action_share">Share</string>
+    <string name="title_action_playing">Now Playing</string>
 
     <!--String for passing intent from notification to ArtistActivity-->
     <string name="query_text_label" translatable="false">query_text</string>
@@ -29,6 +30,9 @@
     <string name="notification_click_label" translatable="false">com.imber.spotifystreamer.notification_click_action</string>
 
     <string name="pref_country_code_title">Country Code</string>
-    <string name="pref_country_code_key" translatable="false">countryCode</string>
+    <string name="pref_country_code_key" translatable="false">country_code</string>
     <string name="pref_country_code_default" translatable="false">US</string>
+
+    <string name="pref_show_notification_title">Show Notifications</string>
+    <string name="pref_show_notification_key" translatable="false">show_notification</string>
 </resources>
